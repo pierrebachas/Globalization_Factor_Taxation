@@ -4,7 +4,7 @@ Dataset and codes for the paper "Globalization and Factor Income Taxation", by P
 The paper assembles an extended time series of effective tax rates on capital and labor.
 The data covers the 150 most populous countries from 1965 to present, with exceptions for pre-independence, civil war, and command economy eras. 
 
-Users interested in using the effective tax rates data, as constructed in the paper can download the dataset "XXX".
+Users interested in using the effective tax rates data, as constructed in the paper, can download the dataset "XXX".
 The key variables for effective tax rates are:  XXX and YYY
 All variables are labelled
  

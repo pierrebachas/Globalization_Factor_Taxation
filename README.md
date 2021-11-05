@@ -1,5 +1,5 @@
 # Globalization_Factor_Taxation
-Dataset and codes for the paper "Globalization and Factor Income Taxation", by Pierre Bachas, Matthew Fisher-Post, Anders Jensen and Gabriel Zucman.
+Data and codes for the paper "Globalization and Factor Income Taxation", by Pierre Bachas, Matthew Fisher-Post, Anders Jensen & Gabriel Zucman.
 
 The paper assembles an extended time series of macroeconomic effective tax rates on capital and labor.
 The data covers the 150 most populous countries from 1965 to present, with exceptions for pre-independence, civil war, and command economy eras. 

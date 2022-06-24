@@ -11,6 +11,7 @@ We aim at term to make the raw data of tax revenue we digitized available togeth
 We also welcome anyone with tax revenue data which can improve or correct the series to contact us to improve the series. 
 
 REPLICATION: Users interested in replicating the results of the paper should follow the do-file: **XXX.do**
+
 This is the master do-files which lists the names of the scripts used for each step of the analysis (in the "replication" folder) 
 The master dataset used in the analysis of the paper is "name.dta" which combines the ETR dataset globalETR_bfjz.dta with several other public data sources needed for the analysis and appended in "name", the final script of ETR_0_master.do 
 

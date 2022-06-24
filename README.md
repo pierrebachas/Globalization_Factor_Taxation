@@ -10,7 +10,7 @@ Users interested in seeing the steps for the construction of the dataset or chan
 We aim at term to make the raw data of tax revenue we digitized available together with country case studies which permit to validate the accuracy of different sources. In the meantime, users interested in obtaining specific countries' raw revenue data sources which we digitized can contact us. 
 We also welcome anyone with tax revenue data which can improve or correct the series to contact us to improve the series. 
 
-REPLICATION: Users interested in replicating the paper can follow the do-file: **replication/do/analysis_0_master.do**
+REPLICATION: Users interested in replicating the paper can follow the do-file: **replication/analysis_0_master.do**
 
 This is the master do-file which lists the names of the scripts used for each step of the analysis (scripts and data in the "replication" folder) 
 The master dataset used in the analysis of the paper is "master_15 Jun 2022.dta". The data is created by combining the ETR dataset globalETR_bfjz.dta with several public datasets needed for the analysis (e.g. trade flows, oil production, etc.). It is created by dofile "ETR_5_preanalysis.do", the final script of data_construction/ETR_0_master.do series. 

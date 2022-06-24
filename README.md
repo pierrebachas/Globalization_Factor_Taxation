@@ -1,5 +1,5 @@
 # Globalization_Factor_Taxation
-Data & codes for the paper "Globalization and Factor Income Taxation", by Pierre Bachas, Matthew Fisher-Post, Anders Jensen & Gabriel Zucman.
+Data & codes for "Globalization and Factor Income Taxation", by Pierre Bachas, Matthew Fisher-Post, Anders Jensen & Gabriel Zucman.
 
 The paper constructs an extended time series of macroeconomic effective tax rates (ETRs) on capital and labor, covering the 150 most populous countries from 1965 to present, with exceptions for command economy eras, pre-independence and civil wars. It then describes the evolution of ETRs in high-income vs low and middle-income countries and analyses the role of globalization (in particular trade integration) in explaining the observed patterns. 
 

@@ -12,7 +12,7 @@ We also welcome anyone with tax revenue data which can improve or correct the se
 
 REPLICATION: Users interested in replicating the paper can follow the do-file: **replication/analysis_0_master.do**
 
-This is the master do-files which lists the names of the scripts used for each step of the analysis (scripts and data in the "replication" folder) 
+This is the master do-file which lists the names of the scripts used for each step of the analysis (scripts and data in the "replication" folder) 
 The master dataset used in the analysis of the paper is "master_15 Jun 2022.dta". The data is created by combining the ETR dataset globalETR_bfjz.dta with several public datasets needed for the analysis (e.g. trade flows, oil production, etc.). It is created by dofile "ETR_5_preanalysis.do", the final script of ETR_0_master.do series. 
 
 

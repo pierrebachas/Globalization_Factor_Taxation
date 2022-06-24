@@ -10,8 +10,9 @@ Users interested in seeing the steps for the construction of the dataset or chan
 In the coming months, we aim to make the raw data of tax revenue we digitized fully available together with the country case studies which permit to validate the accuracy of different sources. In the meantime, users interested in obtaining specific countries' raw revenue data sources which we digitized can contact us. 
 We also welcome anyone with access to tax revenue data which can improve or correct the series to contact us. 
 
-REPLICATION of PAPER: 
-Users interested in replicating the results of the paper can start 
+REPLICATION: Users interested in replicating the results of the paper should follow the do-file: **XXX.do**
+This is the master do-files which lists the names of the scripts used for each step of the analysis (in the "replication" folder) 
+The master dataset used in the analysis of the paper is "name.dta" which combines the ETR dataset globalETR_bfjz.dta with several other public data sources needed for the analysis and appended in "name", the final script of ETR_0_master.do 
 
 
 

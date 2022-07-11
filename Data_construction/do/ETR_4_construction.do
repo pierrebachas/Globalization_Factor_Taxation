@@ -1,8 +1,10 @@
+
+
 ***************************************************************************************
 *  Globalization and Factor Income Taxation			
 *	Authors: Bachas, Fisher-Post, Jensen, Zucman - December 2020								  
 *  	program: ETR_4_construction.do			
-* 	Task: Construct ETRs								  
+* 	Task: Compute headline summary statistics									  
 ***************************************************************************************
 
 	clear all 
@@ -203,9 +205,10 @@
 					
 		*log levels for several important variables
 			*log of factor shares or taxes or trade = level in total economy (2019 constant USD)
-				foreach var in Lsh_ndp Ksh_ndp Tau_L Tau_K trade {
-					 gen log_`var' = log(`var' * ndp_usd) 
-				}
+				foreach var in Lsh_ndp Ksh_ndp Tau_L Tau_K {
+					gen log_`var' = log(`var' * (ndp_usd - nit*nni_usd)) //denominator of Tau_`f' percentage is factor-price nni (fpNNI), so retrieve Tau_`f' in levels by multiplying fpNNI (nit is still %nni)
+				} 
+					gen log_trade = log(trade * ndp_usd) 
 				foreach var in Lsh_corp Ksh_corp	{
 						gen temp = `var' * os_corp * nni_usd //NB os_corp is expressed in percent of NNI (not NDP)
 						gen log_`var' = log(temp) 			
@@ -239,6 +242,11 @@
 		*format, order and labels
 			format %9.2fc Tau* ETR* *_net *_corp log* corp_win_K
 			format %16.0g region
+			format %9.2fc log*
+			foreach var in cit_rate pit_toprate { //for consistency with ETRs and Ksh and ed_* control variables
+				replace `var' = `var' / 100 			
+					format %3.2fc `var'
+				}
 			order Tau_L Tau_K Tau_L_alpha Tau_K_alpha Tau_L_dual Tau_K_dual Tau_L_prime Tau_K_prime Tau_L_indirect Tau_K_indirect, after(Ksh_nni)
 			order ETR_L ETR_K, before(source_tax)
 			order ETR_cit ETR_cit_kg ETR_pit, after(ETR_K)
@@ -295,7 +303,7 @@
 		*rename and re-order
 			foreach x in L K {
 				ren log_`x'sh_ndp log_`x'
-					label var log_`x' "log `x' income (2019 USD)"
+					label var log_`x' "log total income to `x' (2019 USD)"
 				ren log_Tau_`x' log_T_`x'
 					label var log_T_`x' "log tax revenue from `x' (2019 USD)"
 				order log_`x', before(Lsh_corp)
@@ -303,6 +311,7 @@
 			}
 			order Lsh_gdp Ksh_gdp, before(nnipc_ppp)
 			order Lsh_ndp Ksh_ndp, before(Lsh_nni)
+			ren instr_trade2 iv_gravity //to distinguish with iv_oildist later
 	
 				
 		*extend to entire panel some of the variables		
@@ -339,10 +348,15 @@
 	
 		* save with all variables for analysis
 			sort cid year
-			local dateyear = c(current_date)
-			save "data/ETR_`dateyear'.dta", replace
+			save "data/ETR.dta", replace
+				*local dateyear = c(current_date)
+				*save "data/ETR_`dateyear'.dta", replace
 			
 		*save clean public-use dataset 
+		
+			*drop pre-1994 China for public-use file (we'll come back to it in the next do-file, for event-study purposes only)
+			drop if year<1994 & country=="CHN"
+		
 			#delimit  ;
 			keep 	country_name country year region wb_inc ndp_usd
 					ETR_L_prime ETR_K_prime Tau_L_prime Tau_K_prime Lsh_ndp Ksh_ndp
@@ -364,7 +378,7 @@
 			replace source_tax = "Archives" if source_tax == "NS"
 			replace source_tax = "Archives" if source_tax == "IMF"
 
-			************** 	Save the data in several format **************	
+			************** 	Save the data in several formats **************	
 			** Save as .dta	
 			save "data/globalETR_bfjz.dta", replace
 			

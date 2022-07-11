@@ -3,7 +3,7 @@
 *  Globalization and Factor Income Taxation			
 *	Authors: Bachas, Fisher-Post, Jensen, Zucman - December 2020								  
 *  	program: ETR_3_covariates.do			
-* 	Task: Merges revenue and factos shares data with covariates										  
+* 	Task: Merges revenue and factor shares data with covariates										  
 ***************************************************************************************
 	
 		set more off
@@ -73,7 +73,7 @@
 				}	
 						drop check // wid_interpolated
 					label var wid_interpolated "observation is interpolated: World Inequality Database pre-tax income distribution"
-					
+*stop					
 		*ILO factor shares
 			merge 1:1 country year using data/misc/rhs/ILO_master
 				drop if _merge==2
@@ -94,6 +94,7 @@
 			merge 1:1 country year using data/misc/rhs/Lsh_ilo, update replace
 				drop if _merge==2
 					drop _merge			
+					
 				gen Ksh_ilo = 1 - Lsh_ilo
 					format %9.2fc Ksh_ilo
 					order Lsh_ilo Ksh_ilo, after(wid_interpolated)
@@ -102,7 +103,50 @@
 					label var Ksh_ilo "capital share of (factor-price) NDP, following ILO (2019) method and ILOSTAT data"
 					label var coef_ilo_imputed "flag: ILO statistic on salary ratios (self-employed to employed) is imputed"
 					label var emp_ilo_imputed "flag: ILO statistic on employee vs. self-employed shares of workforce is imputed"
-					order ilo_imputed coef_ilo_imputed emp_ilo_imputed, after(selfemployed_family)				
+					order ilo_imputed coef_ilo_imputed emp_ilo_imputed, after(selfemployed_family)			
+					
+*China correction on mixed income
+	*components currently expressed as % nni
+	*need to replace `f'sh_nni, `f'sh_ndp, `f'sh_gdp		
+	
+	*clonevar Lsh_ndp1 = Lsh_ndp
+
+	br country year employees Ksh_ndp Lsh_ndp* Lsh_ilo nit ndp ce_hh mi_hh  if country=="CHN" // & year==1995
+		gen mi_ilo_implied = ( Lsh_ilo * (ndp - nit) ) - ce_hh //diff between Lsh_ilo (from fp_ndp --> nni denominator) and ce_hh is  implicit (labor component of) mixed income
+			replace mi_ilo_implied = mi_ilo_implied / .7 //include the 30% capital component of mixed income
+	
+	sum employees mi_hh mi_ilo_implied [aw=nni_usd] 			, d //overall, ILO implicit mixed income is lower
+	sum employees mi_hh mi_ilo_implied [aw=nni_usd] if region!=4, d  //non-OECD, it is higher
+	
+	replace ce_hh = ce_hh + mi_hh - mi_ilo_implied if country=="CHN"
+	replace mi_hh = mi_ilo_implied if country=="CHN"
+		drop mi_ilo_implied
+	
+	replace va_corp = (ce_hh - ce_gov) + os_corp if country=="CHN"
+	replace mios_hh = mi_hh + os_hh if country=="CHN"
+	replace mios_total = mi_hh + os_hh + os_corp + os_gov if country=="CHN"
+
+	*labor share
+		replace Lsh_nni = ( ce_hh + ( 0.7 * mi_hh ) + nfi_L ) / ( 1 - nit ) if country=="CHN"
+		replace Lsh_ndp = ( ce_hh + ( 0.7 * mi_hh ) ) / ( gdp - cfc - nit ) if country=="CHN"
+		replace Lsh_gdp = ( ce_hh + ( 0.7 * mi_hh ) ) / ( gdp - nit ) if country=="CHN"
+			
+	*capital share
+		replace Ksh_nni = ( ( 0.3 * mi_hh ) + os_hh + os_corp + os_gov + nfi_K ) / ( 1 - nit )  if country=="CHN"
+		replace Ksh_ndp = ( ( 0.3 * mi_hh ) + os_hh + os_corp + os_gov ) / ( gdp - cfc - nit )  if country=="CHN"
+		replace Ksh_gdp = ( ( 0.3 * mi_hh ) + os_hh + os_corp + os_gov + cfc ) / ( gdp - nit )  if country=="CHN"
+
+		
+		
+		*PSZ 2018 data for robustness on USA factor shares; all other values are from ILO
+			merge 1:1 country year using data/misc/rhs/Ksh_psz, keepusing(Ksh_psz Lsh_psz)
+				drop if _merge==2
+				drop _merge
+			
+			replace Ksh_psz = Ksh_ilo if country!="USA"
+			replace Lsh_psz = Lsh_ilo if country!="USA"
+			label var Ksh_psz "capital share of NDP (ILO 2019 except USA from PSZ 2018)"
+			label var Lsh_psz "labor share of NDP (ILO 2019 except USA from PSZ 2018)"
 		
 		*UN SNA tax and revenue levels
 			merge 1:1 country year using "${root}/data/misc/rhs/SNA direct indirect social.dta", keepusing(tax_sna direct indirect social)
@@ -200,6 +244,11 @@
 				drop if _merge==2
 					drop _merge
 		
+		*sector data from WB WDI & WID
+			merge 1:1 country year using data/misc/rhs/sectordata_wdi
+				drop if _merge==2
+					drop _merge
+		
 		*democracy indicator variable from Quality of Government dataset
 			merge 1:1 country year using data/misc/rhs/qog_democracy
 				replace democracy = 1 if country=="KOS" //_merge==1
@@ -266,11 +315,23 @@
 							replace moreopen = 	d_k_open >= .10 if d_k_open!=.
 							replace lessopen = 	d_k_open <= -.10 if d_k_open!=.
 						*/
+				
 		
 		*tariff rates (MFN unweighted and weighted - from TRAINS and Buettner et al (2018); and Furceri / WDI, respectively)
 			merge 1:1 country year using data/misc/rhs/tariffs, keepusing(mfn orig_trains mfn_weighted orig_furceri)
 				drop if _merge==2
 					drop _merge
+		
+		*Graebner et al (2020) openness measures
+			merge 1:1 country year using data/misc/rhs/graebner, keepusing(LMF_EQ LMF_open)
+				drop if _merge==2
+					drop _merge
+				gen lg_eq = log(LMF_EQ)
+					label var lg_eq "log of openness variable LMF_EQ (Graebner et al 2020)"
+						drop LMF_EQ
+				gen lg_open = log(1 + LMF_open)
+					label var lg_open "log of openness variable LMF_open (Graebner et al 2020)"
+				
 		
 	*******************************************************************		
 	* 2. Data Cleaning and Labels
@@ -286,6 +347,8 @@
 		foreach var of varlist pct_tax - pct_6000 tax_sna - oil_pct pvtzn_pct trade goods_trade exports imports net_trade net_goods_trade fdi_net remit gfcf {
 		replace `var' = `var' * (1 / ndp)
 		}
+		
+		*update ilo factor shares
 		
 		*re stitching
 			*SNA stitch flag
@@ -322,7 +385,19 @@
 	*gen nnipc_usd = nnipc_ppp / ppp_usd_2018
 	gen ndp_usd = nni_usd * ndp
 	gen ndppc_usd = nnipc_usd * ndp //
-						
+
+/*
+	replace ndp_usd = ndp_ppp / ppp_usd_2018
+	replace ndppc_usd = ndppc_ppp / ppp_usd_2018
+	
+	replace nni_usd = nni_ppp / ppp_usd_2018
+	replace nnipc_usd = nnipc_ppp / ppp_usd_2018
+*/	
+	
+*gen nni_usd = nni_ppp / ppp_usd_2018
+*gen ndp_usd = ndp_ppp / ppp_usd_2018
+			
+																	
 			format %18.0fc nni_ppp 	ndp_ppp ndppc_ppp nnipc_usd nni_usd ndppc_usd ndp_usd
 				
 			foreach x in pop nni_ppp nnipc_ppp 	ndp_ppp ndppc_ppp nnipc_usd nni_usd ndppc_usd ndp_usd {
@@ -375,8 +450,21 @@
 			cap label var gatt_member "country membership in GATT in year of record"
 			label var wto_member "country membership in WTO (or earlier GATT) in year of record"
 			label var excomm "ex-communist economy and/or historical Soviet influence"
+			label var agric_emp "share of labor force in agriculture, as % [WB WDI]"
+			label var industry_emp "share of labor force in industry, as % [WB WDI]"
+			label var services_emp "share of labor force in services, as % [WB WDI]"
+			label var emppop_ratio "employed, as % of population [WB WDI]"
+			label var unemp_sharelf "unemployed, as % of labor force [WB WDI]"
+			label var agric_va "share of value added in agriculture, as % [WB WDI]"
+			label var industry_va "share of value added in industry, as % [WB WDI]"
+			label var manuf_va "share of value added in manufacturing, as % [WB WDI]"
+			label var services_va "share of value added in services, as % [WB WDI]"
+			label var services_vaperworker "value added per worker, in services (% of total value added / % of labor force) [WB WDI]"
+
+			
 				
 		*order
+			*order Lsh_nni, before(pct_tax)
 			order cid country year region wb_inc
 			order Lsh_ndp Ksh_ndp, before(Lsh_nni)
 			order nni_ppp nni_usd ndp_ppp ndp_usd pop, before(source_sna)

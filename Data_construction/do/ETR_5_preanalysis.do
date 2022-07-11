@@ -10,8 +10,8 @@
 		set more off
 		pause on
 		clear all 
-		local dateyear = c(current_date)
-		cap use "data/ETR_`dateyear'.dta", replace 	//latest dataset (from ETR_4_construction, step 4)
+		*local dateyear = c(current_date)
+		cap use "data/ETR.dta", replace	//latest dataset (from ETR_4_construction, step 4)
 
 ********************************************
 *	Add several measures and weights
@@ -228,13 +228,15 @@
 ********************************************	
 *	Save
 ********************************************
-
-	*save dataset with China (for event-study), before dropping China
-		sort cid year
-		local dateyear = c(current_date)
-		save "data/archive/master_CHN_`dateyear'.dta", replace
-				
-		*drop China pre-1994
+		
+	
+		*drop China pre-1994 (discussed in paper appendices), holding aside 1991-93 data for event-study
+			preserve
+				keep if country=="CHN" & inrange(year,1991,1993)
+				save "data/misc/auxiliary/CHN_91-93.dta", replace	
+			restore
+		
+			
 			foreach var of varlist ETR_L - ETR_pit pct_tax - pct_6000 stitch_tax imputed Tau_L - Ksh_gdp Lsh_net Ksh_net gdp - output_imputed ce_gov - checkweight {
 				replace `var'=. if year<1994 & country=="CHN"
 			}
@@ -244,7 +246,8 @@
 				
 	*save 'master'
 		sort cid year
-		local dateyear = c(current_date)
-		save "data/master_`dateyear'.dta", replace	
+		save "data/master.dta", replace	
+			*local dateyear = c(current_date)
+			*save "data/master_`dateyear'.dta", replace	
 
 						

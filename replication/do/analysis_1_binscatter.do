@@ -12,7 +12,8 @@
 	set more off
 	pause on
 	
-		use "data/master_$dateyear.dta", clear   // 	*use "data/master_15 Jun 2022.dta", clear 
+		use "data/master.dta", clear
+			*use "data/master_$dateyear.dta", clear   // 	*use "data/master_15 Jun 2022.dta", clear 
 
 		*first-difference over time horizons: 2, 5, 7, 10 years
 			foreach var in trade k_open Ksh_ndp Ksh_corp ETR_K_ndp ETR_L_ndp ETR_K_alpha ETR_L_alpha ETR_K_ilo ETR_L_ilo ETR_K_mendoza ETR_L_mendoza ETR_L_dual ETR_K_dual ETR_L_prime ETR_K_prime { // /*ETR_cit Y_corp_Y*/ /*Ksh_net*/
@@ -21,13 +22,11 @@
 						format %9.2fc d`t'_`var'
 					winsor2 d`t'_`var', trim cuts(5 95) replace //winsorize at 5th and 95th percentiles of distribution of new first-diff variables
 			}
-			}
-			
+			}			
 			gen opening = 1 if d5_k_open > 0 & d5_k_open!=.
 				replace opening = 0 if d5_k_open <= 0 & d5_k_open!=.
 			gen closing = 1 if d5_k_open < 0 & d5_k_open!=.
 				replace closing = 0 if d5_k_open >= 0 & d5_k_open!=.
-	
 	
 	***************************************************************************************	
 	*** Figure 5 in paper 																***

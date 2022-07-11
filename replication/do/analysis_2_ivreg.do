@@ -4,15 +4,14 @@
 *  	program: analysis_2_ivreg.do		
 * 	Task: Runs instrumental variable regressions (two instruments for trade)
 ***************************************************************************************
-
 	***************************************************************************************		
 	* Setup
 	***************************************************************************************	
-	
 	set more off
 	pause on
 	
-	use "data/master_$dateyear.dta", clear // use "data/master_15 Jun 2022.dta", clear 
+	use "data/master.dta", clear
+		*use "data/master_$dateyear.dta", clear // use "data/master_15 Jun 2022.dta", clear 
 		
 	* Create sample restriction where all covariates exist (constant sample-size across regressions)
 	gen insample=1 if xrate_wid!=. & iv_gravity!=. & trade_kopen!=. & iv_oildist!=. & gfcf!=. & ETR_K_prime!=.
@@ -560,7 +559,7 @@
 		twoway (connected cit_avg_highincome year if year<=2017 & year>=1966, lwidth(thick) lcolor(blue*1.5) msymbol(circle) mcolor(blue*1.5)) /// 
 		(connected cit_avg_lowdmidincome year if year<=2017 & year>=1966, lwidth(thick) lcolor(blue*0.65) msymbol(X) mcolor(blue*0.)), ytitle("CIT rate (%)") ///
 		xlabel(1965(10)2015) graphregion(color(white)) legend(rows(1)) legend(label(1 "High income countries") label(2 "Low and middle income countries")) ylabel(20(5)50)
-		graph save "CITratestrend.gph", replace
+		graph save "output/CITratestrend.gph", replace
 		graph export "output/CITratestrend.png", replace
 
 		* Sample size
@@ -623,7 +622,7 @@
 
 			sort year
 			twoway (area tradeagree2 year, color(gs14)) (line etrk_avg_highearly year if trade_highearlylate==1 & year<=2018, lwidth(thick) lcolor(green)) (line etrk_avg_lowearly year if trade_highearlylate==2 & year<=2018, lwidth(thick) lcolor(orange)), ytitle("Effective Tax Rate on Capital (%)") ylabel(0.05(0.05)0.25) xlabel(1965(10)2015) graphregion(color(white)) legend(col(1)) legend(label(2 "High Trade Openness pre-1995") label(3 "Low Trade Openness pre-1995")) title("Effective Tax Rate on Capital", size(medsmall))  xtitle("")
-			graph save "g1.gph", replace
+			graph save "output/g1.gph", replace
 
 			gen etrl_avg_highearly=.
 			gen etrl_avg_lowearly=.
@@ -642,7 +641,7 @@
 
 			sort year
 			twoway (area tradeagree2 year, color(gs14)) (line etrl_avg_highearly year if trade_highearlylate==1 & year<=2018, lwidth(thick) lcolor(green)) (line etrl_avg_lowearly year if trade_highearlylate==2 & year<=2018, lwidth(thick) lcolor(orange)), ytitle("Effective Tax Rate on Labor (%)") ylabel(0.05(0.05)0.25) xlabel(1965(10)2015) graphregion(color(white)) legend(col(1)) legend(label(2 "High Trade Openness pre-1995") label(3 "Low Trade Openness pre-1995")) title("Effective Tax Rate on Labor", size(medsmall))   xtitle("")
-			graph save "g2.gph", replace
+			graph save "output/g2.gph", replace
 
 			gen trade_avg_highearly=.
 			gen trade_avg_lowearly=.
@@ -663,10 +662,10 @@
 
 			sort year
 			twoway (area tradeagree1 year, color(gs14)) (line trade_avg_highearly year if trade_highearlylate==1 & year<=2017, lwidth(thick) lcolor(green)) (line trade_avg_lowearly year if trade_highearlylate==2 & year<=2017, lwidth(thick) lcolor(orange)), ytitle("Imports + Exports, share of NDP (%)") ylabel(0.2(0.2)1.4) xlabel(1965(10)2015) graphregion(color(white)) legend(col(1)) legend(order(2 3)) legend(label(2 "High Trade Openness pre-1995") label(3 "Low Trade Openness pre-1995")) title("Trade Openness", size(medsmall)) xtitle("")
-			graph save "g3.gph", replace
+			graph save "output/g3.gph", replace
 
 		* Graph combine the three panels
-			grc1leg "g3.gph" "g1.gph" "g2.gph", legendfrom("g3.gph") ring(0) pos(4) graphregion(color(white)) plotregion(color(white))
+			grc1leg "output/g3.gph" "output/g1.gph" "output/g2.gph", legendfrom("output/g3.gph") ring(0) pos(4) graphregion(color(white)) plotregion(color(white))
 			gr_edit legend.xoffset = 2
 			gr_edit legend.yoffset = 15
 			graph export "output/ETRtrendtradelevel.png", replace
@@ -697,7 +696,7 @@
 			twoway (connected toil mean_pctile if mean_pctile>=7, mcolor(orange) lpattern(shortdash) lcolor(lightgrey)) ///
 			(connected tgravity mean_pctile if mean_pctile>=7, mcolor(green) lpattern(shortdash) lcolor(lightgrey)), ///
 			graphregion(color(white)) xtitle("Log NDP per capita") ytitle("1st Stage F-Statistic") xlabel(7.25(0.25)10.5) legend(label(1 "Oil price-distance instrument") label(2 "Gravity instrument")) ylabel(0(5)40)
-		graph save "IVsubsamplegdp.gph", replace
+		graph save "output/IVsubsamplegdp.gph", replace
 		graph export "output/IVsubsamplegdp.png", replace
 
 			drop toil tgravity mean_pctile ivpctile
@@ -722,7 +721,7 @@
 			(connected tgravity mean_pctile if mean_pctile>=1975 & mean_pctile<=2015, mcolor(green) lpattern(shortdash) lcolor(lightgrey)),  ///
 			graphregion(color(white)) xtitle("Year") ytitle("1st Stage F-Statistic") xlabel(1975(10)2015) legend(label(1 "Oil price-distance instrument") label(2 "Gravity instrument")) ylabel(0(5)40)
 			
-		graph save "IVsubsampleyear.gph", replace
+		graph save "output/IVsubsampleyear.gph", replace
 		graph export "output/IVsubsampleyear.png", replace
 		
 				drop toil tgravity mean_pctile ivpctile

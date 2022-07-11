@@ -2,9 +2,8 @@
 *  	Globalization and Factor Income Taxation			
 *	Authors: Bachas, Fisher-Post, Jensen, Zucman								  
 *  	program: analysis_3_eventstudy.do		
-* 	Task: Examines outcomes after liberalization events
+* 	Task: Examines outcomes post liberalization events
 ***************************************************************************************
-
 
 ***************************************************************************************
 /* 
@@ -28,6 +27,7 @@
 
 * Setting paths
 
+	global maindata "${root}/data"
 	global usedata "${root}/data/archive"
 	global outputs "${root}/output/synthetic_ES"
 	global permutation "${root}/permutation"
@@ -45,12 +45,11 @@
 	
 		
 * Data and variables to use in analysis		
-	global data 				= "master_CHN_$dateyear.dta" // "master_CHN_`dateyear'.dta"
+	global data 				= "master.dta" 
 	global trade_variables 		= "ETR_L_prime ETR_K_prime Ksh_ndp Ksh_corp trade va_corp cit_rate_winz selfemployed os_corp os_hh ce_hh mi_hh industry_va services_va agric_va"
 	global capital_variables 	= "lg_open lg_eq ETR_K_prime ETR_L_prime Ksh_ndp Ksh_corp va_corp cit_rate_winz selfemployed os_corp os_hh ce_hh mi_hh industry_va services_va agric_va"
-
-	cd "$usedata"
-	use "${usedata}/${data}", clear
+		
+	use "${maindata}/${data}", clear
 		
 ************************************************
 *** A: Trade Liberalization Event Studies		
@@ -61,80 +60,63 @@
 	foreach var in $trade_variables {
 				
 		global var="`var'"	
-
-					
-		cd "$usedata"
-		use "${usedata}/${data}", clear
+			
+		global var="ETR_L_prime"
+		
+		use "${maindata}/${data}", clear
 				
 		*** A1/A2: Data prep 
-		
-		cd "$dofile"
-			do A1_event_setup.do
-		cd "$dofile"
-			do A2_sample.do
+			do "${dofile}/A1_event_setup.do"
+			do "${dofile}/A2_sample.do"
 
 		*** A3: Synthetic Matching
 		
-		cd "$dofile"
-			do A3_synthetic_matching.do
+			do "${dofile}/A3_synthetic_matching.do"
 
 		*** A4: Build Regression Sample
 		
-		cd "$dofile"
-			do A4_regression_sample.do
+			do "${dofile}/A4_regression_sample.do"
 			
 		*** A5/A6: Regression
 		
-		cd "$dofile"
-			do A5_regression.do
-		cd "$dofile"	
-			if "`var'"=="ETR_L_prime" | "`var'"=="ETR_K_prime" | "`var'"=="Ksh_ndp" | "`var'"=="Ksh_corp" | "`var'"=="trade" {  	
-			do A6_regression_robustness.do
-			}	
+			do "${dofile}/A5_regression.do"
+		if "`var'"=="ETR_L_prime" | "`var'"=="ETR_K_prime" | "`var'"=="Ksh_ndp" | "`var'"=="Ksh_corp" | "`var'"=="trade" {  	
+			do "${dofile}/A6_regression_robustness.do"
+		}	
 	
 	}
 	
 	*** A7: Outputs
 	
-		cd "$dofile"
-			do A7_1_main_analysis_outputs.do
-		cd "$dofile"
-			do A7_2_mechanism_outputs.do
-		cd "$dofile"
-			do A7_3_robustness_check_outputs.do
+			do "${dofile}/A7_1_main_analysis_outputs.do"
+			do "${dofile}/A7_2_mechanism_outputs.do"
+			do "${dofile}/A7_3_robustness_check_outputs.do"
 	
 	
 	*** A8: Joint weights analysis
 	
-	cd "$usedata"
-	use "${usedata}/${data}", clear
+	use "${maindata}/${data}", clear
 		
 		foreach var of varlist Ksh_ndp Ksh_corp ETR_K_prime ETR_L_prime trade {
 
 			global var="`var'"
 			
-			cd "$usedata"
-			use "${usedata}/${data}", clear
+			use "${maindata}/${data}", clear
 			
-			cd "$dofile"
-				do A8_1_setup_joint_weights.do
-			cd "$dofile"
-				do A8_2_synthetic_matching_joint_weights.do
-			cd "$dofile"	
-				do A8_3_regression_joint_weights
+				do "${dofile}/A8_1_setup_joint_weights.do"
+				do "${dofile}/A8_2_synthetic_matching_joint_weights.do"
+				do "${dofile}/A8_3_regression_joint_weights.do"
 		}
 		****
 	
-			cd "$dofile"	
-			do A8_4_joint_weights_outputs
+			do "${dofile}/A8_4_joint_weights_outputs.do"
 
 ************************************************************
 *** B: Capital Liberalization Event Studies		
 ************************************************************
 
 
-cd "$usedata"
-use "${usedata}/${data}", clear
+use "${maindata}/${data}", clear
 
 * We loop over all variables: 
 
@@ -142,64 +124,48 @@ use "${usedata}/${data}", clear
 	
 		global var="`var'"	
 		
-		cd "$usedata"
-		use "${usedata}/${data}", clear
+		use "${maindata}/${data}", clear
 				
 		*** B1/B2: Data prep 
-		cd "$dofile"
-			do B1_event_setup.do
-		cd "$dofile"
-			do B2_sample.do
+			do "${dofile}/B1_event_setup.do"
+			do "${dofile}/B2_sample.do"
 
 		*** B3: Synthetic Matching
-		cd "$dofile"
-			do B3_synthetic_matching.do
+			do "${dofile}/B3_synthetic_matching.do"
 
 		*** B4: Build Regression Sample
-		cd "$dofile"
-			do B4_regression_sample.do
+			do "${dofile}/B4_regression_sample.do"
 			
 		*** B5: Regression
-		cd "$dofile"
-			do B5_regression.do
+			do "${dofile}/B5_regression.do"
 			
 	}
 
 	*** B6: Outputs
-	cd "$dofile"
-		do B6_1_main_analysis_outputs.do
-	cd "$dofile"
-		do B6_2_mechanism_outputs.do
+		do "${dofile}/B6_1_main_analysis_outputs.do"
+		do "${dofile}/B6_2_mechanism_outputs.do"
 
-	cd "$usedata"
-	use "${usedata}/${data}", clear
+	use "${maindata}/${data}", clear
 	
-	cd "$dofile"
-		do B6_3_weight_table.do
+		do "${dofile}/B6_3_weight_table.do"
 
 	*** B7: Joint weights analysis
 		
-	cd "$usedata"
-	use "${usedata}/${data}", clear
+	use "${maindata}/${data}", clear
 	
 		foreach var of varlist lg_open lg_eq ETR_K_prime ETR_L_prime Ksh_ndp Ksh_corp {
 
 			global var="`var'"	
 			
-			cd "$usedata"
-			use "${usedata}/${data}", clear
+			use "${maindata}/${data}", clear
 			
-			cd "$dofile"
-				do B7_1_setup_joint_weights.do
-			cd "$dofile"
-				do B7_2_synthetic_matching_joint_weights.do
-			cd "$dofile"	
-				do B7_3_regression_joint_weights
+				do "${dofile}/B7_1_setup_joint_weights.do"
+				do "${dofile}/B7_2_synthetic_matching_joint_weights.do"
+				do "${dofile}/B7_3_regression_joint_weights"
 		}
 		****
 
-			cd "$dofile"	
-			do B7_4_joint_weights_outputs
+			do "${dofile}/B7_4_joint_weights_outputs"
 
 
 		

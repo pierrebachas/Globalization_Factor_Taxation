@@ -5,40 +5,7 @@
 *	Authors: Bachas, Fisher-Post, Jensen, Zucman - December 2020								  
 *  	program: ETR_0_master.do			
 * 	Task: Run all do-files to generate revenue series										  
-***************************************************************************************
-
-***************************************************************************************
-/*
-		outline of steps
-			1.	import raw revenue data
-				a.	OECD, HA, ICTD, IMF/NS/other, CIAT-IDB?
-				b.	UN D61, RPC
-				c.	import miscellaneous covariates and additional country-year data here? (or later) PB: I think this was done later in the end ? 
-			2.	harmonize raw tax revenue data
-				a.	unified framework for revenue variables
-					i.	crosswalks from each raw source if needed
-					ii.	currency conversions to align with macro variables
-					iii. as percentages of national income
-					iv.	aggregate up to main tax categories
-				b.	data health checks and caution flags
-					i.	not necessary to include in replication code?
-					ii.	external flags could be imported above (see ‘misc’)
-				c.	country case studies
-					i.	harmonize each country’s long-run series, one by one
-					ii.	simplify code
-					iii. make the criteria explicit in the code
-				d.	misc data here? (or earlier)
-			3.	finalize dataset
-				a.	compute headline statistics
-					i.	Tau_L and Tau_K
-					ii.	import factor shares (see separate workflow/folder) and any other SNA components
-					iii.	AETRs (and variants)
-				b.	prepare data for analysis
-					i.	see Anders’s trade regressions inputs
-					ii.	import more misc data? (or put it earlier, even if only used here)
-
-																*/
-***************************************************************************************																
+***************************************************************************************														
 	
 	clear all
 	set more off
@@ -53,6 +20,12 @@
 			}
 			else if "`c(username)'"=="pierrebachas" { 												// Pierre's Mac
 				global root "/Users/pierrebachas/Dropbox/Progressivity_Development/replication"									
+			}
+			else if "`c(username)'"=="...[Anders computer name]..." { 								// Anders
+				global root "/Users/...[Anders P&D Dropbox name].../replication"									
+			}
+			else if "`c(username)'"=="...[Gabriel computer name]..." { 								// Gabriel
+				global root "/Users/...[Gabriel P&D Dropbox name].../replication"									
 			}
 
 		cd "$root"
@@ -83,15 +56,13 @@
 		do do/ETR_4_construction
 		* Function: computes the Effective Tax Rates	
 		* Input: "data/misc/merged" 	--> Dataset with merged covariates
-		* Output: "data/ETR_`dateyear'.dta"	--> Full dataset used for analysis
+		* Output: "data/ETR.dta"		--> Full dataset toward analysis
 		* Output: "data/globalETR_bfjz.dta"	--> Minimal dataset for public use
 			
 		do do/ETR_5_preanalysis
 		* Function: Prepare panel data for descriptives and analysis, prepares dimensions for heterogeneity (income groups), IV for trade, other-covariates and controls
-		* Input: "data/ETR_`dateyear'.dta"
-		* Output: "data/master_`dateyear'.dta" 			--> Main dataset for analysis 
-		* Output: "data/master_CHN_`dateyear'.dta" 		--> Alternative dataset for analysis, includes China pre-1994: only used for event study to have 10 years pre-WTO accession (2001)
-		
+		* Input: "data/ETR.dta"
+		* Output: "data/master.dta" 			--> Main dataset for analysis 
 		
 		
 		
